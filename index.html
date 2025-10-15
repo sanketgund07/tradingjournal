@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Journal</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React Libraries (UMD builds for direct browser use) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  
+  <!-- Babel Standalone: Transpiles TSX/JSX directly in the browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "vite": "https://aistudiocdn.com/vite@^7.1.10",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "url": "https://aistudiocdn.com/url@^0.11.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-gray-900 text-white font-sans">
+  <div id="root" class="bg-gradient-to-br from-gray-900 to-blue-900/50 min-h-screen"></div>
+  
+  <!--
+    All application code is now inside this single script block.
+    It's transpiled by Babel directly in the browser.
+    This approach removes the need for modules (import/export) and allows
+    the app to run directly from the filesystem (`file://...`) without errors.
+  -->
+  <script type="text/babel" data-presets="react,typescript">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- FROM types.ts ---
+    
+    // --- FROM hooks/useLocalStorage.ts ---
+    function useLocalStorage(key, initialValue) {
+      const [storedValue, setStoredValue] = useState(() => {
+        try {
+          const item = window.localStorage.getItem(key);
+          return item ? JSON.parse(item) : initialValue;
+        } catch (error) {
+          console.error(error);
+          return initialValue;
+        }
+      });
+
+      const setValue = (value) => {
+        try {
+          const valueToStore = value instanceof Function ? value(storedValue) : value;
+          setStoredValue(valueToStore);
+          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      useEffect(() => {
+        const handleStorageChange = (e) => {
+          if (e.key === key && e.newValue) {
+            setStoredValue(JSON.parse(e.newValue));
+          }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+      }, [key]);
+
+      return [storedValue, setValue];
+    }
+
+    // --- FROM constants.tsx ---
+    const CalendarIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+    );
+    const JournalIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v11.494m-5.22-6.065l10.44 6.065m-10.44-6.065L1.78 12.5m10.22 6.253L1.78 12.5m10.22-6.253l10.44 6.065M3.25 12.5l10.22-6.253m0 18.753l10.44-6.065M20.75 12.5l-10.22 6.253" /></svg>
+    );
+    const AchievementIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-12v4m-2-2h4m6 4v4m-2-2h4M12 3v18" /></svg>
+    );
+    const GoalIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+    );
+    const PerformanceIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+    );
+    const RulesIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    );
+    const DetailsIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    );
+    const MoreIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+    );
+
+    const NAV_ITEMS = [
+      { id: 'calendar', text: 'Calendar', icon: <CalendarIcon /> },
+      { id: 'journal', text: 'Journal', icon: <JournalIcon /> },
+      { id: 'performance', text: 'Performance', icon: <PerformanceIcon /> },
+      { id: 'goals', text: 'Goals', icon: <GoalIcon /> },
+      { id: 'achievements', text: 'Achievements', icon: <AchievementIcon /> },
+      { id: 'rules', text: 'Rules', icon: <RulesIcon /> },
+      { id: 'details', text: 'Details', icon: <DetailsIcon /> },
+    ];
+
+    const EMOJI_OPTIONS = ['🔥', '❤️', '🏆', '⭐'];
+
+    const LOCAL_STORAGE_KEYS = [
+      'dailyLogs',
+      'trades',
+      'achievements',
+      'goals',
+      'rules',
+      'followedRules',
+      'currency'
+    ];
+
+    // --- FROM components/Modal.tsx ---
+    const Modal = ({ isOpen, onClose, children, title }) => {
+      if (!isOpen) return null;
+
+      return (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300"
+          onClick={onClose}
+        >
+          <div
+            className="bg-gray-800/50 backdrop-blur-lg rounded-xl border border-white/20 shadow-xl p-6 w-full max-w-md m-4 transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale"
+            onClick={(e) => e.stopPropagation()}
+            style={{ animation: 'fade-in-scale 0.3s forwards' }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">{title}</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div>{children}</div>
+          </div>
+          <style>{`
+            @keyframes fade-in-scale {
+              from { opacity: 0; transform: scale(0.95); }
+              to { opacity: 1; transform: scale(1); }
+            }
+            .animate-fade-in-scale {
+              animation: fade-in-scale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+          `}</style>
+        </div>
+      );
+    };
+
+    // --- FROM components/tabs/CalendarTab.tsx ---
+    const CalendarTab = ({ dailyLogs, setDailyLogs, currency, setCurrency }) => {
+      const [currentDate, setCurrentDate] = useState(new Date());
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      const [selectedDate, setSelectedDate] = useState(null);
+      const [logType, setLogType] = useState('profit');
+      const [amount, setAmount] = useState('');
+
+      const formatAmount = (num) => {
+        if (num % 1 === 0) {
+            return num.toString();
+        }
+        return num.toFixed(2);
+      };
+
+      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      const startDay = startOfMonth.getDay();
+      const daysInMonth = endOfMonth.getDate();
+      
+      const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+      const blanks = Array.from({ length: startDay }, (_, i) => i);
+
+      const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+      const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+
+      const handleDayClick = (day) => {
+        const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+        setSelectedDate(date);
+        const dateKey = date.toISOString().split('T')[0];
+        const existingLog = dailyLogs[dateKey];
+        if (existingLog) {
+          setLogType(existingLog.type);
+          setAmount(String(existingLog.amount));
+        } else {
+          setLogType('profit');
+          setAmount('');
+        }
+        setIsModalOpen(true);
+      };
+
+      const handleSave = () => {
+        if (selectedDate && amount) {
+          const dateKey = selectedDate.toISOString().split('T')[0];
+          const newLogs = { ...dailyLogs, [dateKey]: { type: logType, amount: parseFloat(amount) } };
+          setDailyLogs(newLogs);
+          setIsModalOpen(false);
+        }
+      };
+      
+      const handleDelete = () => {
+        if (selectedDate) {
+            const dateKey = selectedDate.toISOString().split('T')[0];
+            const newLogs = {...dailyLogs};
+            delete newLogs[dateKey];
+            setDailyLogs(newLogs);
+            setIsModalOpen(false);
+        }
+      }
+
+      const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      return (
+        <div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold">Calendar</h1>
+            <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400 mr-2">Currency:</span>
+                <button onClick={() => setCurrency('₹')} className={`px-3 py-1 text-sm rounded-md transition ${currency === '₹' ? 'bg-blue-500 text-white' : 'bg-white/10 hover:bg-white/20'}`}>INR (₹)</button>
+                <button onClick={() => setCurrency('$')} className={`px-3 py-1 text-sm rounded-md transition ${currency === '$' ? 'bg-blue-500 text-white' : 'bg-white/10 hover:bg-white/20'}`}>USD ($)</button>
+            </div>
+          </div>
+          <div className="flex justify-between items-center mb-4">
+            <button onClick={prevMonth} className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&lt;</button>
+            <h2 className="text-lg sm:text-xl font-semibold text-center">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+            <button onClick={nextMonth} className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&gt;</button>
+          </div>
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {daysOfWeek.map(day => <div key={day} className="text-center font-bold text-gray-400 text-xs sm:text-base">{day}</div>)}
+            {blanks.map(i => <div key={`blank-${i}`} />)}
+            {days.map(day => {
+              const dateKey = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toISOString().split('T')[0];
+              const log = dailyLogs[dateKey];
+              const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+
+              return (
+                <div
+                  key={day}
+                  onClick={() => handleDayClick(day)}
+                  className={`relative p-1 sm:p-2 h-20 sm:h-24 rounded-lg cursor-pointer transition-all duration-300 flex flex-col justify-between
+                    ${isToday ? 'bg-blue-500/30' : 'bg-white/5'}
+                    hover:bg-white/20 hover:scale-105 border border-transparent hover:border-white/20`}
+                >
+                  <span className="font-bold text-sm sm:text-base">{day}</span>
+                  {log && (
+                    <div className={`text-right font-bold text-[11px] sm:text-sm ${log.type === 'profit' ? 'text-green-400' : 'text-red-400'}`}>
+                      {log.type === 'profit' ? '+' : '-'}{currency}{formatAmount(log.amount)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={`Log for ${selectedDate?.toLocaleDateString()}`}>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <button onClick={() => setLogType('profit')} className={`flex-1 p-2 rounded-lg transition ${logType === 'profit' ? 'bg-green-500' : 'bg-white/10 hover:bg-white/20'}`}>Profit</button>
+                <button onClick={() => setLogType('loss')} className={`flex-1 p-2 rounded-lg transition ${logType === 'loss' ? 'bg-red-500' : 'bg-white/10 hover:bg-white/20'}`}>Loss</button>
+              </div>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Amount"
+                className="w-full p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <div className="flex justify-end gap-2">
+                {dailyLogs[selectedDate?.toISOString().split('T')[0]] && (
+                    <button onClick={handleDelete} className="px-4 py-2 bg-red-500/80 rounded-lg hover:bg-red-500 transition">Delete</button>
+                )}
+                <button onClick={handleSave} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">Save</button>
+              </div>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // --- FROM components/tabs/JournalTab.tsx ---
+    const JournalTab = ({ trades, setTrades, currency }) => {
+        const initialTradeState = {
+            date: new Date().toISOString().split('T')[0],
+            type: 'profit',
+            amount: 0,
+            pair: '',
+            logic: '',
+            slSet: '',
+            confidenceLevel: 5,
+            mistakes: '',
+            learning: '',
+        };
+
+        const [isModalOpen, setIsModalOpen] = useState(false);
+        const [editingTrade, setEditingTrade] = useState(initialTradeState);
+        
+        const openNewTradeModal = () => {
+            setEditingTrade(initialTradeState);
+            setIsModalOpen(true);
+        };
+
+        const openEditTradeModal = (trade) => {
+            setEditingTrade(trade);
+            setIsModalOpen(true);
+        };
+
+        const handleSave = () => {
+            if ('id' in editingTrade) { // Editing existing trade
+                setTrades(trades.map(t => t.id === editingTrade.id ? editingTrade : t));
+            } else { // Adding new trade
+                const newTrade = { ...editingTrade, id: new Date().toISOString() };
+                setTrades([newTrade, ...trades]);
+            }
+            setIsModalOpen(false);
+        };
+
+        const handleDelete = (id) => {
+            setTrades(trades.filter(t => t.id !== id));
+            setIsModalOpen(false);
+        };
+
+        const groupedTrades = trades.reduce((acc, trade) => {
+            const date = trade.date;
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(trade);
+            return acc;
+        }, {});
+
+        return (
+            <div>
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl sm:text-3xl font-bold">Journal</h1>
+                    <button onClick={openNewTradeModal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition font-semibold">+ Add Trade</button>
+                </div>
+
+                <div className="space-y-8">
+                    {Object.keys(groupedTrades).sort((a,b) => new Date(b).getTime() - new Date(a).getTime()).map(date => (
+                        <div key={date}>
+                            <h2 className="text-xl font-semibold mb-2 text-gray-300">{new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h2>
+                            <div className="space-y-4">
+                                {groupedTrades[date].map(trade => (
+                                    <div key={trade.id} className="bg-white/5 p-4 rounded-lg border border-white/10 cursor-pointer hover:bg-white/10 transition-all" onClick={() => openEditTradeModal(trade)}>
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <span className="font-bold text-lg">{trade.pair}</span>
+                                                <p className={`text-lg font-bold ${trade.type === 'profit' ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {trade.type === 'profit' ? '+' : '-'}{currency}{trade.amount}
+                                                </p>
+                                            </div>
+                                            <div className="text-right text-sm text-gray-400">
+                                                <p>SL: {trade.slSet}</p>
+                                                {trade.confidenceLevel && <p>Confidence: {trade.confidenceLevel}/10</p>}
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 border-t border-white/10 pt-2 space-y-2">
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-gray-300">Logic:</h4>
+                                                <p className="text-sm text-gray-400 whitespace-pre-wrap">{trade.logic}</p>
+                                            </div>
+                                            {trade.mistakes && (
+                                                <div>
+                                                    <h4 className="font-semibold text-sm text-red-400/80">Mistakes:</h4>
+                                                    <p className="text-sm text-gray-400 whitespace-pre-wrap">{trade.mistakes}</p>
+                                                </div>
+                                            )}
+                                            {trade.learning && (
+                                                <div>
+                                                    <h4 className="font-semibold text-sm text-green-400/80">Learnings:</h4>
+                                                    <p className="text-sm text-gray-400 whitespace-pre-wrap">{trade.learning}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={'id' in editingTrade ? 'Edit Trade' : 'Add New Trade'}>
+                    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                        <input type="date" value={editingTrade.date} onChange={e => setEditingTrade({...editingTrade, date: e.target.value})} className="w-full p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+                        <div className="flex gap-2">
+                            <button onClick={() => setEditingTrade({...editingTrade, type: 'profit'})} className={`flex-1 p-2 rounded-lg transition ${editingTrade.type === 'profit' ? 'bg-green-500' : 'bg-white/10 hover:bg-white/20'}`}>Profit</button>
+                            <button onClick={() => setEditingTrade({...editingTrade, type: 'loss'})} className={`flex-1 p-2 rounded-lg transition ${editingTrade.type === 'loss' ? 'bg-red-500' : 'bg-white/10 hover:bg-white/20'}`}>Loss</button>
+                        </div>
+                        <input type="number" value={editingTrade.amount} onChange={e => setEditingTrade({...editingTrade, amount: parseFloat(e.target.value) || 0})} placeholder="Amount" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
+                        <input type="text" value={editingTrade.pair} onChange={e => setEditingTrade({...editingTrade, pair: e.target.value})} placeholder="Pair (e.g., EUR/USD)" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
+                        <textarea value={editingTrade.logic} onChange={e => setEditingTrade({...editingTrade, logic: e.target.value})} placeholder="Trade Logic" className="w-full p-2 bg-white/10 rounded-lg border border-white/20" rows={3}></textarea>
+                        <input type="text" value={editingTrade.slSet} onChange={e => setEditingTrade({...editingTrade, slSet: e.target.value})} placeholder="Stop Loss" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
+                        <div>
+                            <label htmlFor="confidence" className="block text-sm font-medium text-gray-300 mb-1">Confidence Level</label>
+                            <select
+                                id="confidence"
+                                value={editingTrade.confidenceLevel || 5}
+                                onChange={e => setEditingTrade({...editingTrade, confidenceLevel: parseInt(e.target.value, 10)})}
+                                className="w-full p-2 bg-white/10 rounded-lg border border-white/20"
+                            >
+                                {Array.from({ length: 10 }, (_, i) => i + 1).map(level => (
+                                    <option key={level} value={level} className="bg-gray-800">{level}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <textarea
+                            value={editingTrade.mistakes || ''}
+                            onChange={e => setEditingTrade({...editingTrade, mistakes: e.target.value})}
+                            placeholder="What mistakes were made?"
+                            className="w-full p-2 bg-white/10 rounded-lg border border-white/20"
+                            rows={3}
+                        />
+                        <textarea
+                            value={editingTrade.learning || ''}
+                            onChange={e => setEditingTrade({...editingTrade, learning: e.target.value})}
+                            placeholder="What did you learn from this trade?"
+                            className="w-full p-2 bg-white/10 rounded-lg border border-white/20"
+                            rows={3}
+                        />
+                        <div className="flex justify-end gap-2">
+                             {'id' in editingTrade && (
+                                 <button onClick={() => handleDelete(editingTrade.id)} className="px-4 py-2 bg-red-500/80 rounded-lg hover:bg-red-500 transition">Delete</button>
+                             )}
+                            <button onClick={handleSave} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">Save</button>
+                        </div>
+                    </div>
+                </Modal>
+            </div>
+        );
+    };
+
+    // --- FROM components/tabs/AchievementsTab.tsx ---
+    const AchievementsTab = ({ achievements, setAchievements }) => {
+        const initialAchievementState = {
+            text: '',
+            emoji: '🏆',
+        };
+
+        const [isModalOpen, setIsModalOpen] = useState(false);
+        const [editingAchievement, setEditingAchievement] = useState(initialAchievementState);
+
+        const openNewModal = () => {
+            setEditingAchievement(initialAchievementState);
+            setIsModalOpen(true);
+        };
+
+        const openEditModal = (achievement) => {
+            setEditingAchievement(achievement);
+            setIsModalOpen(true);
+        };
+
+        const handleSave = () => {
+            if ('id' in editingAchievement) {
+                setAchievements(achievements.map(a => a.id === editingAchievement.id ? editingAchievement : a));
+            } else {
+                const newAchievement = { ...editingAchievement, id: new Date().toISOString() };
+                setAchievements([newAchievement, ...achievements]);
+            }
+            setIsModalOpen(false);
+        };
+
+        const handleDelete = (id) => {
+            setAchievements(achievements.filter(a => a.id !== id));
+            setIsModalOpen(false);
+        };
+
+        return (
+            <div>
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl sm:text-3xl font-bold">Achievements</h1>
+                    <button onClick={openNewModal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition font-semibold">+ Add</button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {achievements.map(ach => (
+                        <div key={ach.id} onClick={() => openEditModal(ach)} className="bg-white/5 p-6 rounded-lg border border-white/10 flex flex-col items-center text-center cursor-pointer hover:bg-white/10 transition-transform hover:scale-105">
+                            <div className="text-5xl mb-4">{ach.emoji}</div>
+                            <p className="text-lg font-medium">{ach.text}</p>
+                        </div>
+                    ))}
+                </div>
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={'id' in editingAchievement ? 'Edit Achievement' : 'New Achievement'}>
+                    <div className="space-y-4">
+                        <textarea
+                            value={editingAchievement.text}
+                            onChange={e => setEditingAchievement({...editingAchievement, text: e.target.value})}
+                            placeholder="Describe your achievement..."
+                            className="w-full p-2 bg-white/10 rounded-lg border border-white/20"
+                            rows={3}
+                        />
+                        <div className="flex justify-center gap-4">
+                            {EMOJI_OPTIONS.map(emoji => (
+                                <button
+                                    key={emoji}
+                                    onClick={() => setEditingAchievement({...editingAchievement, emoji: emoji})}
+                                    className={`text-3xl p-2 rounded-full transition ${editingAchievement.emoji === emoji ? 'bg-blue-500/50 scale-125' : 'hover:bg-white/10'}`}
+                                >
+                                    {emoji}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex justify-end gap-2">
+                             {'id' in editingAchievement && (
+                                 <button onClick={() => handleDelete(editingAchievement.id)} className="px-4 py-2 bg-red-500/80 rounded-lg hover:bg-red-500 transition">Delete</button>
+                             )}
+                            <button onClick={handleSave} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">Save</button>
+                        </div>
+                    </div>
+                </Modal>
+            </div>
+        );
+    };
+
+    // --- FROM components/tabs/GoalsTab.tsx ---
+    const GoalsTab = ({ goals, setGoals, currency }) => {
+        const initialGoalState = {
+            name: '',
+            target: 1000,
+            current: 0,
+        };
+        const [isGoalModalOpen, setGoalModalOpen] = useState(false);
+        const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
+        const [editingGoal, setEditingGoal] = useState(initialGoalState);
+        const [selectedGoal, setSelectedGoal] = useState(null);
+        const [updateAmount, setUpdateAmount] = useState(0);
+
+        const openNewModal = () => {
+            setEditingGoal(initialGoalState);
+            setGoalModalOpen(true);
+        };
+
+        const openEditModal = (goal) => {
+            setEditingGoal(goal);
+            setGoalModalOpen(true);
+        };
+
+        const openUpdateModal = (goal) => {
+            setSelectedGoal(goal);
+            setUpdateAmount(0);
+            setUpdateModalOpen(true);
+        };
+
+        const handleSaveGoal = () => {
+            if ('id' in editingGoal) {
+                setGoals(goals.map(g => g.id === editingGoal.id ? editingGoal : g));
+            } else {
+                const newGoal = { ...editingGoal, id: new Date().toISOString() };
+                setGoals([newGoal, ...goals]);
+            }
+            setGoalModalOpen(false);
+        };
+
+        const handleDeleteGoal = (id) => {
+            setGoals(goals.filter(g => g.id !== id));
+            setGoalModalOpen(false);
+        };
+
+        const handleUpdateGoal = () => {
+            if (selectedGoal) {
+                const newCurrent = selectedGoal.current + updateAmount;
+                const updatedGoal = { ...selectedGoal, current: Math.max(0, newCurrent) };
+                setGoals(goals.map(g => g.id === selectedGoal.id ? updatedGoal : g));
+            }
+            setUpdateModalOpen(false);
+        };
+
+        return (
+            <div>
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl sm:text-3xl font-bold">Goals</h1>
+                    <button onClick={openNewModal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition font-semibold">+ Add Goal</button>
+                </div>
+                <div className="space-y-6">
+                    {goals.map(goal => {
+                        const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
+                        return (
+                            <div key={goal.id} className="bg-white/5 p-4 rounded-lg border border-white/10">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="font-bold text-lg">{goal.name}</span>
+                                    <div className="space-x-2">
+                                        <button onClick={() => openUpdateModal(goal)} className="px-3 py-1 text-sm bg-blue-500/80 rounded-md hover:bg-blue-600">Update</button>
+                                        <button onClick={() => openEditModal(goal)} className="px-3 py-1 text-sm bg-white/10 rounded-md hover:bg-white/20">Edit</button>
+                                    </div>
+                                </div>
+                                <div className="w-full bg-gray-700 rounded-full h-2.5 mb-1">
+                                    <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${Math.min(100, progress)}%` }}></div>
+                                </div>
+                                <div className="text-sm text-gray-300 text-right">
+                                    {currency}{goal.current.toFixed(2)} / {currency}{goal.target.toFixed(2)} ({progress.toFixed(1)}%)
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+                <Modal isOpen={isGoalModalOpen} onClose={() => setGoalModalOpen(false)} title={'id' in editingGoal ? 'Edit Goal' : 'New Goal'}>
+                    <div className="space-y-4">
+                        <input type="text" value={editingGoal.name} onChange={e => setEditingGoal({...editingGoal, name: e.target.value})} placeholder="Goal Name" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
+                        <input type="number" value={editingGoal.target} onChange={e => setEditingGoal({...editingGoal, target: parseFloat(e.target.value) || 0})} placeholder="Target Amount" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
+                        <input type="number" value={editingGoal.current} onChange={e => setEditingGoal({...editingGoal, current: parseFloat(e.target.value) || 0})} placeholder="Current Amount" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
+                        <div className="flex justify-end gap-2">
+                            {'id' in editingGoal && <button onClick={() => handleDeleteGoal(editingGoal.id)} className="px-4 py-2 bg-red-500/80 rounded-lg hover:bg-red-500">Delete</button>}
+                            <button onClick={handleSaveGoal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600">Save</button>
+                        </div>
+                    </div>
+                </Modal>
+                <Modal isOpen={isUpdateModalOpen} onClose={() => setUpdateModalOpen(false)} title={`Update ${selectedGoal?.name}`}>
+                    <div className="space-y-4">
+                         <input type="number" value={updateAmount} onChange={e => setUpdateAmount(parseFloat(e.target.value) || 0)} placeholder="Amount to add (use '-' for subtraction)" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
+                         <div className="flex justify-end gap-2">
+                            <button onClick={handleUpdateGoal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">Update</button>
+                        </div>
+                    </div>
+                </Modal>
+            </div>
+        );
+    };
+
+    // --- FROM components/tabs/PerformanceTab.tsx ---
+    const PerformanceTab = ({ dailyLogs, trades, currency }) => {
+        const StatCard = ({ title, value, color = 'text-white' }) => (
+            <div className="bg-white/5 p-4 rounded-lg border border-white/10 text-center">
+                <h3 className="text-gray-400 text-sm md:text-base">{title}</h3>
+                <p className={`text-xl md:text-2xl font-bold ${color}`}>{value}</p>
+            </div>
+        );
+
+        const CustomBarChart = ({ data, currency }) => {
+            const [tooltip, setTooltip] = useState(null);
+            const containerRef = useRef(null);
+
+            const PADDING = { top: 20, right: 20, bottom: 30, left: 50 };
+
+            const width = containerRef.current?.clientWidth || 500;
+            const height = 300;
+            
+            const chartWidth = width - PADDING.left - PADDING.right;
+            const chartHeight = height - PADDING.top - PADDING.bottom;
+
+            const maxAmount = Math.max(1, ...data.map(d => d.profit), ...data.map(d => d.loss));
+            const xScale = chartWidth / (data.length || 1);
+            const barWidth = Math.max(1, (xScale * 0.6) / 2);
+
+            const yTicks = 5;
+            const yAxisLabels = Array.from({ length: yTicks + 1 }, (_, i) => {
+                const value = maxAmount * (i / yTicks);
+                return {
+                    value: value,
+                    y: chartHeight - (value / maxAmount) * chartHeight
+                };
+            });
+
+            const handleMouseOver = (e, item) => {
+                if (!containerRef.current) return;
+                const rect = containerRef.current.getBoundingClientRect();
+                setTooltip({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                    data: item
+                });
+            };
+
+            return (
+                <div className="relative w-full h-[300px]" ref={containerRef}>
+                    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`}>
+                        <g transform={`translate(${PADDING.left}, ${PADDING.top})`}>
+                            {yAxisLabels.map(tick => (
+                                <g key={tick.value}>
+                                    <line x1={0} y1={tick.y} x2={chartWidth} y2={tick.y} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
+                                    <text x={-10} y={tick.y + 4} fill="rgba(255,255,255,0.7)" textAnchor="end" fontSize={12}>
+                                        {tick.value.toFixed(0)}
+                                    </text>
+                                </g>
+                            ))}
+                            {data.map((d, i) => (
+                                 <text key={i} x={i * xScale + xScale / 2} y={chartHeight + 20} fill="rgba(255,255,255,0.7)" textAnchor="middle" fontSize={12}>
+                                    {d.name}
+                                </text>
+                            ))}
+                            {data.map((d, i) => {
+                                const profitHeight = (d.profit / maxAmount) * chartHeight;
+                                const lossHeight = (d.loss / maxAmount) * chartHeight;
+                                const xPos = i * xScale + (xScale / 2) - barWidth;
+
+                                return (
+                                    <g key={d.name} onMouseMove={(e) => handleMouseOver(e, d)} onMouseLeave={() => setTooltip(null)}>
+                                        <rect x={xPos - barWidth / 2} y={chartHeight - profitHeight} width={barWidth} height={profitHeight} fill="#4ade80" className="opacity-70 hover:opacity-100 transition-opacity" />
+                                        <rect x={xPos + barWidth / 2} y={chartHeight - lossHeight} width={barWidth} height={lossHeight} fill="#f87171" className="opacity-70 hover:opacity-100 transition-opacity" />
+                                    </g>
+                                );
+                            })}
+                        </g>
+                    </svg>
+                    {tooltip && (
+                        <div className="absolute p-2 rounded-md shadow-lg text-sm pointer-events-none" style={{ top: tooltip.y - 60, left: tooltip.x + 10, background: 'rgba(30,30,30,0.9)', border: '1px solid rgba(255,255,255,0.2)'}}>
+                            <div className="font-bold mb-1">Day: {tooltip.data.name}</div>
+                            {tooltip.data.profit > 0 && <div className="text-green-400">Profit: {currency}{tooltip.data.profit.toFixed(2)}</div>}
+                            {tooltip.data.loss > 0 && <div className="text-red-400">Loss: {currency}{tooltip.data.loss.toFixed(2)}</div>}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const WinLossRatioDisplay = ({ data }) => {
+            const total = data.reduce((sum, item) => sum + item.value, 0);
+            const wins = data.find(d => d.name === 'Wins')?.value || 0;
+            const losses = data.find(d => d.name === 'Losses')?.value || 0;
+            
+            if (total === 0) {
+                return <div className="text-center text-gray-400 flex items-center justify-center h-full">No trading day data for this period.</div>;
+            }
+
+            const winPercent = ((wins / total) * 100).toFixed(1);
+
+            return (
+                <div className="flex flex-col justify-center items-center h-full space-y-4">
+                    <div className="text-lg">Daily Win Rate: <span className="font-bold text-green-400">{winPercent}%</span></div>
+                    <div className="w-full bg-gray-700 rounded-full h-4">
+                        <div className="bg-green-500 h-4 rounded-l-full" style={{ width: `${winPercent}%` }}></div>
+                    </div>
+                     <div className="flex justify-between w-full text-sm">
+                        <span><span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>Winning Days: {wins}</span>
+                        <span><span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-2"></span>Losing Days: {losses}</span>
+                    </div>
+                </div>
+            );
+        };
+
+        const [timeframe, setTimeframe] = useState('month');
+        const [refreshKey, setRefreshKey] = useState(0);
+        const [displayDate, setDisplayDate] = useState(new Date());
+
+        const prevPeriod = () => {
+            setDisplayDate(current => {
+                const newDate = new Date(current);
+                if (timeframe === 'month') {
+                    newDate.setDate(1);
+                    newDate.setMonth(newDate.getMonth() - 1);
+                } else {
+                    newDate.setDate(newDate.getDate() - 7);
+                }
+                return newDate;
+            });
+        };
+
+        const nextPeriod = () => {
+            setDisplayDate(current => {
+                const newDate = new Date(current);
+                if (timeframe === 'month') {
+                    newDate.setDate(1);
+                    newDate.setMonth(newDate.getMonth() + 1);
+                } else {
+                    newDate.setDate(newDate.getDate() + 7);
+                }
+                return newDate;
+            });
+        };
+
+        const periodLogs = useMemo(() => {
+            const logs = {};
+            const now = displayDate;
+
+            if (timeframe === 'month') {
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                for (const dateKey in dailyLogs) {
+                    const logDate = new Date(dateKey);
+                    if(logDate.getFullYear() === year && logDate.getMonth() === month) {
+                        logs[dateKey] = dailyLogs[dateKey];
+                    }
+                }
+            } else { // week
+                const startOfWeek = new Date(now);
+                startOfWeek.setDate(now.getDate() - now.getDay()); 
+                startOfWeek.setHours(0,0,0,0);
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                endOfWeek.setHours(23,59,59,999);
+
+                for (const dateKey in dailyLogs) {
+                    const logDate = new Date(dateKey);
+                    if (logDate >= startOfWeek && logDate <= endOfWeek) {
+                        logs[dateKey] = dailyLogs[dateKey];
+                    }
+                }
+            }
+            return logs;
+        }, [dailyLogs, timeframe, displayDate, refreshKey]);
+        
+        const performanceStats = useMemo(() => {
+            const dailyLogValues = Object.values(periodLogs);
+            const profitableDaysLogs = dailyLogValues.filter(log => log.type === 'profit');
+            const losingDaysLogs = dailyLogValues.filter(log => log.type === 'loss');
+
+            const totalProfit = profitableDaysLogs.reduce((sum, log) => sum + log.amount, 0);
+            const totalLoss = losingDaysLogs.reduce((sum, log) => sum + log.amount, 0);
+
+            const maxProfit = Math.max(0, ...profitableDaysLogs.map(log => log.amount));
+            const maxLoss = Math.max(0, ...losingDaysLogs.map(log => log.amount));
+
+            const avgProfit = profitableDaysLogs.length > 0 ? totalProfit / profitableDaysLogs.length : 0;
+            const avgLoss = losingDaysLogs.length > 0 ? totalLoss / losingDaysLogs.length : 0;
+            
+            const riskToReward = avgLoss > 0 ? (avgProfit / avgLoss) : 0;
+
+            const profitableDays = profitableDaysLogs.length;
+            const losingDays = losingDaysLogs.length;
+            const totalTradingDays = profitableDays + losingDays;
+            const dailyWinRate = totalTradingDays > 0 ? (profitableDays / totalTradingDays) * 100 : 0;
+
+            return { totalProfit, totalLoss, netProfit: totalProfit - totalLoss, maxProfit, maxLoss, avgProfit, avgLoss, riskToReward, dailyWinRate };
+        }, [periodLogs]);
+
+
+        const processedData = useMemo(() => {
+            const data = [];
+            const now = displayDate;
+            
+            if (timeframe === 'month') {
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const date = new Date(now.getFullYear(), now.getMonth(), i);
+                    const dateKey = date.toISOString().split('T')[0];
+                    const log = dailyLogs[dateKey];
+                    data.push({
+                        name: `${i}`,
+                        profit: log && log.type === 'profit' ? log.amount : 0,
+                        loss: log && log.type === 'loss' ? log.amount : 0,
+                    });
+                }
+            } else { // week
+                const startOfWeek = new Date(now);
+                startOfWeek.setDate(now.getDate() - now.getDay());
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(startOfWeek);
+                    date.setDate(startOfWeek.getDate() + i);
+                    const dateKey = date.toISOString().split('T')[0];
+                    const log = dailyLogs[dateKey];
+                    data.push({
+                        name: date.toLocaleString('en-US', { weekday: 'short' }),
+                        profit: log && log.type === 'profit' ? log.amount : 0,
+                        loss: log && log.type === 'loss' ? log.amount : 0,
+                    });
+                }
+            }
+            return data;
+        }, [dailyLogs, timeframe, displayDate, refreshKey]);
+
+        const winLossData = useMemo(() => {
+            const dailyLogValues = Object.values(periodLogs);
+            const wins = dailyLogValues.filter(log => log.type === 'profit').length;
+            const losses = dailyLogValues.filter(log => log.type === 'loss').length;
+            return [{ name: 'Wins', value: wins }, { name: 'Losses', value: losses }];
+        }, [periodLogs]);
+
+        const periodLabel = useMemo(() => {
+            if (timeframe === 'month') {
+                return displayDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+            }
+            const startOfWeek = new Date(displayDate);
+            startOfWeek.setDate(displayDate.getDate() - startOfWeek.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            return `Week: ${startOfWeek.toLocaleDateString(undefined, {month: 'short', day: 'numeric'})} - ${endOfWeek.toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}`;
+        }, [displayDate, timeframe]);
+
+        return (
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-6">Performance</h1>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6">
+                  <StatCard title="Total Profit" value={`${currency}${performanceStats.totalProfit.toFixed(2)}`} color="text-green-400" />
+                  <StatCard title="Total Loss" value={`${currency}${performanceStats.totalLoss.toFixed(2)}`} color="text-red-400" />
+                  <StatCard title="Net Profit" value={`${currency}${performanceStats.netProfit.toFixed(2)}`} color={performanceStats.netProfit >= 0 ? 'text-green-400' : 'text-red-400'} />
+                  <StatCard title="Daily Win Rate" value={`${performanceStats.dailyWinRate.toFixed(1)}%`} color="text-blue-400" />
+                  <StatCard title="Avg Profit" value={`${currency}${performanceStats.avgProfit.toFixed(2)}`} color="text-green-400" />
+                  <StatCard title="Avg Loss" value={`${currency}${performanceStats.avgLoss.toFixed(2)}`} color="text-red-400" />
+                  <StatCard title="Max Profit" value={`${currency}${performanceStats.maxProfit.toFixed(2)}`} color="text-green-400" />
+                  <StatCard title="Max Loss" value={`${currency}${performanceStats.maxLoss.toFixed(2)}`} color="text-red-400" />
+              </div>
+               <div className="bg-white/5 p-6 rounded-lg border border-white/10 text-center mb-8">
+                  <h3 className="text-gray-400 text-lg">Risk / Reward Ratio</h3>
+                  <p className="text-4xl font-bold text-cyan-400">{performanceStats.riskToReward > 0 ? `${performanceStats.riskToReward.toFixed(2)} : 1` : 'N/A'}</p>
+                  <p className="text-sm text-gray-500 mt-1">Based on average profit vs average loss for the period</p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white/5 p-4 sm:p-6 rounded-lg border border-white/10">
+                  <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
+                    <h2 className="text-xl font-semibold">Daily P/L</h2>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                            <button onClick={prevPeriod} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&lt;</button>
+                            <span className="font-semibold w-32 sm:w-48 text-center text-sm">{periodLabel}</span>
+                            <button onClick={nextPeriod} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&gt;</button>
+                        </div>
+                        <div className="flex gap-2">
+                            <button onClick={() => setTimeframe('week')} className={`px-3 py-1 text-sm rounded-md ${timeframe === 'week' ? 'bg-blue-500' : 'bg-white/10'}`}>Week</button>
+                            <button onClick={() => setTimeframe('month')} className={`px-3 py-1 text-sm rounded-md ${timeframe === 'month' ? 'bg-blue-500' : 'bg-white/10'}`}>Month</button>
+                        </div>
+                    </div>
+                  </div>
+                  <CustomBarChart data={processedData} currency={currency} />
+                </div>
+                <div className="bg-white/5 p-4 sm:p-6 rounded-lg border border-white/10 flex flex-col">
+                  <h2 className="text-xl font-semibold mb-4 text-center">Winning vs Losing Days ({timeframe})</h2>
+                  <div className="flex-grow">
+                    <WinLossRatioDisplay data={winLossData} />
+                  </div>
+                </div>
+              </div>
+            </div>
+        );
+    };
+
+    // --- FROM components/tabs/RulesTab.tsx ---
+    const RulesTab = ({ rules, setRules, followedRules, setFollowedRules }) => {
+      const [ruleText, setRuleText] = useState('');
+      const [editingRule, setEditingRule] = useState(null);
+      const [isCalendarModalOpen, setCalendarModalOpen] = useState(false);
+      const [selectedDate, setSelectedDate] = useState(new Date());
+
+      const handleAddRule = () => {
+        if (ruleText.trim()) {
+          if (editingRule) {
+            setRules(rules.map(r => r.id === editingRule.id ? { ...r, text: ruleText } : r));
+            setEditingRule(null);
+          } else {
+            const newRule = { id: new Date().toISOString(), text: ruleText };
+            setRules([...rules, newRule]);
+          }
+          setRuleText('');
+        }
+      };
+
+      const handleDeleteRule = (id) => {
+        setRules(rules.filter(r => r.id !== id));
+      };
+      
+      const handleEditRule = (rule) => {
+        setEditingRule(rule);
+        setRuleText(rule.text);
+      };
+      
+      const handleDayClick = (date) => {
+        setSelectedDate(date);
+        setCalendarModalOpen(true);
+      };
+
+      const handleToggleRuleFollowed = (ruleId) => {
+        const dateKey = selectedDate.toISOString().split('T')[0];
+        const currentFollowed = followedRules[dateKey] || [];
+        const newFollowed = currentFollowed.includes(ruleId)
+          ? currentFollowed.filter(id => id !== ruleId)
+          : [...currentFollowed, ruleId];
+        setFollowedRules({ ...followedRules, [dateKey]: newFollowed });
+      };
+      
+      const [calendarDate, setCalendarDate] = useState(new Date());
+      const startOfMonth = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+      const endOfMonth = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
+      const startDay = startOfMonth.getDay();
+      const daysInMonth = endOfMonth.getDate();
+      const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+      const blanks = Array.from({ length: startDay }, (_, i) => i);
+      const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6">Trading Rules</h1>
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={ruleText}
+                onChange={(e) => setRuleText(e.target.value)}
+                placeholder="Enter a new rule"
+                className="flex-1 p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <button onClick={handleAddRule} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">{editingRule ? 'Update' : 'Add'}</button>
+            </div>
+            <div className="space-y-2">
+              {rules.map((rule, index) => (
+                <div key={rule.id} className="flex items-center justify-between bg-white/5 p-3 rounded-lg">
+                  <span className="flex-1">{index + 1}. {rule.text}</span>
+                  <div className="space-x-2">
+                    <button onClick={() => handleEditRule(rule)} className="text-blue-400 hover:text-blue-300">Edit</button>
+                    <button onClick={() => handleDeleteRule(rule.id)} className="text-red-400 hover:text-red-300">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold mb-6 text-center">Rule Adherence Tracker</h2>
+            <div className="flex justify-between items-center mb-4">
+              <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&lt;</button>
+              <h3 className="text-xl font-semibold text-center">{calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3>
+              <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))} className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&gt;</button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+              {daysOfWeek.map(day => <div key={day} className="text-center font-bold text-gray-400 text-sm">{day}</div>)}
+              {blanks.map(i => <div key={`blank-${i}`} />)}
+              {days.map(day => {
+                const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day);
+                const dateKey = date.toISOString().split('T')[0];
+                const followedCount = followedRules[dateKey]?.length || 0;
+                return (
+                  <div key={day} onClick={() => handleDayClick(date)} className="relative p-2 h-16 rounded-lg cursor-pointer transition bg-white/5 hover:bg-white/20 text-center flex flex-col justify-center items-center">
+                    <span className="font-bold">{day}</span>
+                    {followedCount > 0 && (
+                      <span className="text-xs text-green-400">{followedCount}/{rules.length} followed</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <Modal isOpen={isCalendarModalOpen} onClose={() => setCalendarModalOpen(false)} title={`Rules for ${selectedDate.toLocaleDateString()}`}>
+            <div className="space-y-3">
+              {rules.length > 0 ? rules.map(rule => (
+                <label key={rule.id} className="flex items-center p-3 bg-white/10 rounded-lg cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={followedRules[selectedDate.toISOString().split('T')[0]]?.includes(rule.id) || false}
+                    onChange={() => handleToggleRuleFollowed(rule.id)}
+                    className="w-5 h-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600"
+                  />
+                  <span className="ml-3 text-white">{rule.text}</span>
+                </label>
+              )) : <p className="text-center text-gray-400">No rules defined yet.</p>}
+              <div className="flex justify-end pt-4">
+                <button onClick={() => setCalendarModalOpen(false)} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600">Close</button>
+              </div>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // --- NEW component/tabs/DetailsTab.tsx ---
+    const DetailsTab = () => {
+        const InfoItem = ({ icon, label, value, displayValue, isLink = false }) => (
+            <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-6 h-6 text-blue-400">{icon}</div>
+                <div>
+                    <h3 className="font-semibold text-gray-300">{label}</h3>
+                    {isLink ? (
+                        <a href={value} target="_blank" rel="noopener noreferrer" className="text-white hover:underline break-all">{displayValue || value}</a>
+                    ) : (
+                        <p className="text-white break-all">{value}</p>
+                    )}
+                </div>
+            </div>
+        );
+
+        const EmailIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
+        const LocationIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+        const UpiIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
+        const InstagramIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>;
+        const TelegramIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"></path></svg>;
+
+
+        return (
+            <div>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6">Details</h1>
+                <div className="bg-white/5 p-6 rounded-lg border border-white/10 space-y-6">
+                    <p className="text-lg text-gray-300 leading-relaxed">
+                        Hi, This app is created by Sanket Gund from Maharashtra, India. To solve the needs of all tracking trading records including Calendar, Journal, Performance, Rules, Goals, Achievement in single app without paying any Money. 
+                    </p>
+                    <p className="text-lg text-gray-300 leading-relaxed">
+                        If you find this app helpful you can show your love on below UPI address. I am actively working on adding features. If you feel extra features can be added please share your feedback on my email with tile "Trading Journal By SG Feedback" so I can catch your email faster.
+                    </p>
+                    
+                    <div className="border-t border-white/10 my-6"></div>
+
+                    <div className="space-y-4">
+                        <InfoItem 
+                            icon={<EmailIcon />} 
+                            label="Contact" 
+                            value="mailto:sanketgund444@gmail.com"
+                            displayValue="sanketgund444@gmail.com"
+                            isLink={true}
+                        />
+                        <InfoItem 
+                            icon={<LocationIcon />} 
+                            label="Location" 
+                            value="Dharashiv, Maharashtra, India"
+                        />
+                        <InfoItem 
+                            icon={<UpiIcon />} 
+                            label="UPI" 
+                            value="sanketgund@icici"
+                        />
+                        <InfoItem
+                            icon={<InstagramIcon />}
+                            label="Instagram"
+                            value="https://www.instagram.com/sanket_gund"
+                            displayValue="sanket_gund"
+                            isLink={true}
+                        />
+                        <InfoItem
+                            icon={<TelegramIcon />}
+                            label="Telegram"
+                            value="https://t.me/sanketgund777"
+                            displayValue="@sanketgund777"
+                            isLink={true}
+                        />
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // --- FROM components/Sidebar.tsx ---
+    const Sidebar = ({ activeTab, setActiveTab, navItems, onImport, onExport }) => {
+        const ExportIcon = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+        );
+
+        const ImportIcon = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+        );
+
+        return (
+            <nav className="w-64 h-full p-4 flex-shrink-0 hidden md:flex">
+                <div className="bg-black/10 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl h-full flex flex-col p-4">
+                    <div className="text-2xl font-bold mb-10 text-center tracking-widest text-white/90">
+                        Trading Journal 📈
+                    </div>
+                    <ul className="space-y-2">
+                        {navItems.map((item) => (
+                        <li key={item.id}>
+                            <button
+                            onClick={() => setActiveTab(item.id)}
+                            className={`w-full flex items-center p-3 rounded-lg transition-all duration-300 ${
+                                activeTab === item.id
+                                ? 'bg-blue-500/30 text-white shadow-lg'
+                                : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                            }`}
+                            >
+                            {item.icon}
+                            <span className="ml-4 font-medium">{item.text}</span>
+                            </button>
+                        </li>
+                        ))}
+                    </ul>
+
+                    <div className="mt-auto pt-4 border-t border-white/10">
+                        <ul className="space-y-2">
+                            <li>
+                                <input type="file" id="import-file" accept=".json" className="hidden" onChange={onImport} />
+                                <label htmlFor="import-file" className="w-full flex items-center p-3 rounded-lg transition-all duration-300 text-gray-300 hover:bg-white/10 hover:text-white cursor-pointer">
+                                    <ImportIcon />
+                                    <span className="ml-4 font-medium">Import Data</span>
+                                </label>
+                            </li>
+                            <li>
+                                <button
+                                    onClick={onExport}
+                                    className="w-full flex items-center p-3 rounded-lg transition-all duration-300 text-gray-300 hover:bg-white/10 hover:text-white"
+                                >
+                                    <ExportIcon />
+                                    <span className="ml-4 font-medium">Export Data</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        );
+    };
+
+    // --- NEW component/BottomNav.tsx for Mobile ---
+    const BottomNav = ({ activeTab, setActiveTab, navItems, onMenuClick }) => {
+        const mainItemIds = ['calendar', 'journal', 'performance', 'goals', 'achievements', 'rules'];
+        const mainItems = navItems.filter(item => mainItemIds.includes(item.id));
+        const moreItemIds = navItems.filter(item => !mainItemIds.includes(item.id)).map(item => item.id);
+        const isMoreTabActive = moreItemIds.includes(activeTab);
+
+        return (
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800/50 backdrop-blur-lg border-t border-white/20 z-40">
+                <div className="flex justify-start overflow-x-auto scrollbar-hide">
+                    {mainItems.map(item => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            className={`flex flex-col items-center justify-center p-2 w-20 flex-shrink-0 transition-colors duration-200 ${
+                                activeTab === item.id ? 'text-blue-400' : 'text-gray-400 hover:text-white'
+                            }`}
+                        >
+                            {item.icon}
+                            <span className={`text-xs mt-1 ${activeTab === item.id ? 'font-bold' : ''}`}>{item.text}</span>
+                        </button>
+                    ))}
+                    <button
+                        onClick={onMenuClick}
+                        className={`flex flex-col items-center justify-center p-2 w-20 flex-shrink-0 transition-colors duration-200 ${
+                            isMoreTabActive ? 'text-blue-400' : 'text-gray-400 hover:text-white'
+                        }`}
+                    >
+                        <MoreIcon />
+                        <span className={`text-xs mt-1 ${isMoreTabActive ? 'font-bold' : ''}`}>More</span>
+                    </button>
+                </div>
+            </nav>
+        );
+    };
+
+
+    // --- FROM App.tsx ---
+    const App = () => {
+      const [activeTab, setActiveTab] = useState('calendar');
+      const [currency, setCurrency] = useLocalStorage('currency', '₹');
+      const [isMenuOpen, setMenuOpen] = useState(false);
+
+      const [dailyLogs, setDailyLogs] = useLocalStorage('dailyLogs', {});
+      const [trades, setTrades] = useLocalStorage('trades', []);
+      const [achievements, setAchievements] = useLocalStorage('achievements', []);
+      const [goals, setGoals] = useLocalStorage('goals', []);
+      const [rules, setRules] = useLocalStorage('rules', []);
+      const [followedRules, setFollowedRules] = useLocalStorage('followedRules', {});
+      
+      const mainItemIds = ['calendar', 'journal', 'performance', 'goals', 'achievements', 'rules'];
+      const moreNavItems = NAV_ITEMS.filter(item => !mainItemIds.includes(item.id));
+
+      const handleExport = () => {
+        const backupData = {};
+        LOCAL_STORAGE_KEYS.forEach(key => {
+            const data = localStorage.getItem(key);
+            if (data) {
+                try {
+                    backupData[key] = JSON.parse(data);
+                } catch(e) {
+                    console.error(`Could not parse localStorage item: ${key}`, e);
+                }
+            }
+        });
+
+        const jsonString = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const date = new Date().toISOString().split('T')[0];
+        a.href = url;
+        a.download = `trading-journal-backup-${date}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      const handleImport = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const text = e.target?.result;
+                if (typeof text !== 'string') throw new Error("File is not readable");
+                const data = JSON.parse(text);
+                
+                if (window.confirm('Are you sure you want to import this data? This will overwrite all current data. It is recommended to export first.')) {
+                    LOCAL_STORAGE_KEYS.forEach(key => {
+                        if (data[key]) {
+                            localStorage.setItem(key, JSON.stringify(data[key]));
+                        } else {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                    alert('Data imported successfully. The app will now reload.');
+                    window.location.reload();
+                }
+
+            } catch (error) {
+                console.error('Import failed:', error);
+                alert('Error: Failed to import data. The file might be corrupted or invalid.');
+            } finally {
+                event.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+      };
+
+      const renderContent = () => {
+        switch (activeTab) {
+          case 'calendar':
+            return <CalendarTab dailyLogs={dailyLogs} setDailyLogs={setDailyLogs} currency={currency} setCurrency={setCurrency} />;
+          case 'journal':
+            return <JournalTab trades={trades} setTrades={setTrades} currency={currency} />;
+          case 'achievements':
+            return <AchievementsTab achievements={achievements} setAchievements={setAchievements} />;
+          case 'goals':
+            return <GoalsTab goals={goals} setGoals={setGoals} currency={currency} />;
+          case 'performance':
+            return <PerformanceTab dailyLogs={dailyLogs} trades={trades} currency={currency} />;
+          case 'rules':
+            return <RulesTab rules={rules} setRules={setRules} followedRules={followedRules} setFollowedRules={setFollowedRules} />;
+          case 'details':
+            return <DetailsTab />;
+          default:
+            return <CalendarTab dailyLogs={dailyLogs} setDailyLogs={setDailyLogs} currency={currency} setCurrency={setCurrency} />;
+        }
+      };
+
+      const ExportIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}> <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /> </svg> );
+      const ImportIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}> <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /> </svg> );
+
+      return (
+        <div className="flex h-screen overflow-hidden">
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} navItems={NAV_ITEMS} onImport={handleImport} onExport={handleExport} />
+          <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto pb-28 md:pb-6">
+            <div className="w-full h-full bg-black/10 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl p-4 sm:p-6 overflow-y-auto">
+                {renderContent()}
+            </div>
+          </main>
+          <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} navItems={NAV_ITEMS} onMenuClick={() => setMenuOpen(true)} />
+          <Modal isOpen={isMenuOpen} onClose={() => setMenuOpen(false)} title="Menu">
+              <div className="space-y-2">
+                  {moreNavItems.map(item => (
+                    <button
+                        key={item.id}
+                        onClick={() => { setActiveTab(item.id); setMenuOpen(false); }}
+                        className={`w-full flex items-center p-3 rounded-lg transition-all duration-300 bg-white/5 hover:bg-white/10 ${activeTab === item.id ? 'text-blue-400' : 'text-gray-300'}`}
+                    >
+                        {item.icon}
+                        <span className="ml-4 font-medium">{item.text}</span>
+                    </button>
+                  ))}
+                  <div className="border-t border-white/10 my-2"></div>
+                  <input type="file" id="import-file-mobile" accept=".json" className="hidden" onChange={handleImport} />
+                  <label htmlFor="import-file-mobile" className="w-full flex items-center p-3 rounded-lg transition-all duration-300 text-gray-300 bg-white/5 hover:bg-white/10 hover:text-white cursor-pointer">
+                      <ImportIcon />
+                      <span className="ml-4 font-medium">Import Data</span>
+                  </label>
+                  <button
+                      onClick={handleExport}
+                      className="w-full flex items-center p-3 rounded-lg transition-all duration-300 text-gray-300 bg-white/5 hover:bg-white/10 hover:text-white"
+                  >
+                      <ExportIcon />
+                      <span className="ml-4 font-medium">Export Data</span>
+                  </button>
+              </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // --- FROM index.tsx (Entry Point) ---
+    const rootElement = document.getElementById('root');
+    if (!rootElement) {
+      throw new Error("Could not find root element to mount to");
+    }
+
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+
+  </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
