@@ -3,10 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trading Journal</title>
+  <title>Divine Trading Journal</title>
   
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            divine: {
+              skyblue: '#00BFFF',
+              blue: '#0A0E1A',
+              deep: '#1A1F35',
+              green: '#00A693',
+              cream: '#F5F2ED'
+            }
+          },
+          fontFamily: {
+            serif: ['Playfair Display', 'serif'],
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
 
   <!-- React Libraries (UMD builds for direct browser use) -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -33,10 +57,9 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-gray-900 text-white font-sans">
-  <div id="root" class="bg-gradient-to-br from-gray-900 to-blue-900/50 min-h-screen"></div>
+<body class="bg-divine-blue text-divine-cream font-sans">
+  <div id="root" class="bg-gradient-to-br from-divine-blue via-divine-deep to-divine-blue min-h-screen"></div>
   
   <!--
     All application code is now inside this single script block.
@@ -112,11 +135,11 @@
 
     const NAV_ITEMS = [
       { id: 'calendar', text: 'Calendar', icon: <CalendarIcon /> },
+      { id: 'rules', text: 'Rules', icon: <RulesIcon /> },
       { id: 'journal', text: 'Journal', icon: <JournalIcon /> },
       { id: 'performance', text: 'Performance', icon: <PerformanceIcon /> },
       { id: 'goals', text: 'Goals', icon: <GoalIcon /> },
       { id: 'achievements', text: 'Achievements', icon: <AchievementIcon /> },
-      { id: 'rules', text: 'Rules', icon: <RulesIcon /> },
       { id: 'details', text: 'Details', icon: <DetailsIcon /> },
     ];
 
@@ -232,14 +255,17 @@
       const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
       return (
-        <div>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h1 className="text-2xl sm:text-3xl font-bold">Calendar</h1>
+        <div className="relative">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-4 relative z-10">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-divine-skyblue">Calendar</h1>
             <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-400 mr-2">Currency:</span>
-                <button onClick={() => setCurrency('₹')} className={`px-3 py-1 text-sm rounded-md transition ${currency === '₹' ? 'bg-blue-500 text-white' : 'bg-white/10 hover:bg-white/20'}`}>INR (₹)</button>
-                <button onClick={() => setCurrency('$')} className={`px-3 py-1 text-sm rounded-md transition ${currency === '$' ? 'bg-blue-500 text-white' : 'bg-white/10 hover:bg-white/20'}`}>USD ($)</button>
+                <button onClick={() => setCurrency('₹')} className={`px-3 py-1 text-sm rounded-md transition ${currency === '₹' ? 'bg-divine-skyblue text-divine-blue font-bold' : 'bg-white/10 hover:bg-white/20'}`}>INR (₹)</button>
+                <button onClick={() => setCurrency('$')} className={`px-3 py-1 text-sm rounded-md transition ${currency === '$' ? 'bg-divine-skyblue text-divine-blue font-bold' : 'bg-white/10 hover:bg-white/20'}`}>USD ($)</button>
             </div>
+          </div>
+          <div className="text-center mb-6 relative z-10">
+            <p className="text-divine-skyblue/80 font-serif italic text-lg">"कर्म कर फल की चिंता मत कर"</p>
           </div>
           <div className="flex justify-between items-center mb-4">
             <button onClick={prevMonth} className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&lt;</button>
@@ -259,7 +285,7 @@
                   key={day}
                   onClick={() => handleDayClick(day)}
                   className={`relative p-1 sm:p-2 h-20 sm:h-24 rounded-lg cursor-pointer transition-all duration-300 flex flex-col justify-between
-                    ${isToday ? 'bg-blue-500/30' : 'bg-white/5'}
+                    ${isToday ? 'bg-divine-skyblue/30' : 'bg-white/5'}
                     hover:bg-white/20 hover:scale-105 border border-transparent hover:border-white/20`}
                 >
                   <span className="font-bold text-sm sm:text-base">{day}</span>
@@ -283,13 +309,13 @@
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Amount"
-                className="w-full p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-2 focus:ring-divine-skyblue focus:outline-none"
               />
               <div className="flex justify-end gap-2">
                 {dailyLogs[selectedDate?.toISOString().split('T')[0]] && (
                     <button onClick={handleDelete} className="px-4 py-2 bg-red-500/80 rounded-lg hover:bg-red-500 transition">Delete</button>
                 )}
-                <button onClick={handleSave} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">Save</button>
+                <button onClick={handleSave} className="px-4 py-2 bg-divine-skyblue text-divine-blue font-bold rounded-lg hover:bg-sky-500 transition">Save</button>
               </div>
             </div>
           </Modal>
@@ -301,14 +327,20 @@
     const JournalTab = ({ trades, setTrades, currency }) => {
         const initialTradeState = {
             date: new Date().toISOString().split('T')[0],
+            tradeOfDay: '1st',
+            pair: '',
+            buySell: 'Buy',
             type: 'profit',
             amount: 0,
-            pair: '',
-            logic: '',
-            slSet: '',
+            strategy: '',
+            riskAmount: 0,
+            slSet: 'Yes',
             confidenceLevel: 5,
+            psychology: '',
+            observation: '',
             mistakes: '',
-            learning: '',
+            tradeCloseType: 'TP',
+            screenshot: '',
         };
 
         const [isModalOpen, setIsModalOpen] = useState(false);
@@ -328,7 +360,7 @@
             if ('id' in editingTrade) { // Editing existing trade
                 setTrades(trades.map(t => t.id === editingTrade.id ? editingTrade : t));
             } else { // Adding new trade
-                const newTrade = { ...editingTrade, id: new Date().toISOString() };
+                const newTrade = { ...editingTrade, id: new Date().getTime().toString() };
                 setTrades([newTrade, ...trades]);
             }
             setIsModalOpen(false);
@@ -337,6 +369,17 @@
         const handleDelete = (id) => {
             setTrades(trades.filter(t => t.id !== id));
             setIsModalOpen(false);
+        };
+
+        const handleImageUpload = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setEditingTrade({ ...editingTrade, screenshot: reader.result });
+                };
+                reader.readAsDataURL(file);
+            }
         };
 
         const groupedTrades = trades.reduce((acc, trade) => {
@@ -351,44 +394,66 @@
         return (
             <div>
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl sm:text-3xl font-bold">Journal</h1>
-                    <button onClick={openNewTradeModal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition font-semibold">+ Add Trade</button>
+                    <h1 className="text-2xl sm:text-3xl font-serif font-bold text-divine-skyblue">Journal</h1>
+                    <button onClick={openNewTradeModal} className="px-4 py-2 bg-divine-skyblue text-divine-blue rounded-lg hover:bg-sky-500 transition font-bold shadow-lg">+ Add Trade</button>
                 </div>
 
                 <div className="space-y-8">
                     {Object.keys(groupedTrades).sort((a,b) => new Date(b).getTime() - new Date(a).getTime()).map(date => (
                         <div key={date}>
-                            <h2 className="text-xl font-semibold mb-2 text-gray-300">{new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h2>
-                            <div className="space-y-4">
+                            <h2 className="text-xl font-serif font-semibold mb-3 text-divine-skyblue/70 border-b border-divine-skyblue/20 pb-1">
+                                {new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {groupedTrades[date].map(trade => (
-                                    <div key={trade.id} className="bg-white/5 p-4 rounded-lg border border-white/10 cursor-pointer hover:bg-white/10 transition-all" onClick={() => openEditTradeModal(trade)}>
-                                        <div className="flex justify-between items-start">
+                                    <div key={trade.id} className="bg-white/5 p-4 rounded-xl border border-white/10 cursor-pointer hover:bg-white/10 transition-all shadow-md" onClick={() => openEditTradeModal(trade)}>
+                                        <div className="flex justify-between items-start mb-2">
                                             <div>
-                                                <span className="font-bold text-lg">{trade.pair}</span>
-                                                <p className={`text-lg font-bold ${trade.type === 'profit' ? 'text-green-400' : 'text-red-400'}`}>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-lg text-divine-cream">{trade.pair}</span>
+                                                    <span className={`text-xs px-2 py-0.5 rounded font-bold ${trade.buySell === 'Buy' ? 'bg-divine-skyblue/20 text-divine-skyblue' : 'bg-orange-500/20 text-orange-400'}`}>
+                                                        {trade.buySell}
+                                                    </span>
+                                                    <span className="text-xs text-gray-400">#{trade.tradeOfDay}</span>
+                                                </div>
+                                                <p className={`text-xl font-bold mt-1 ${trade.type === 'profit' ? 'text-green-400' : 'text-red-400'}`}>
                                                     {trade.type === 'profit' ? '+' : '-'}{currency}{trade.amount}
                                                 </p>
                                             </div>
-                                            <div className="text-right text-sm text-gray-400">
-                                                <p>SL: {trade.slSet}</p>
-                                                {trade.confidenceLevel && <p>Confidence: {trade.confidenceLevel}/10</p>}
+                                            <div className="text-right text-xs text-gray-400 space-y-1">
+                                                <p className="bg-white/10 px-2 py-1 rounded">SL Set: <span className={trade.slSet === 'Yes' ? 'text-green-400' : 'text-red-400'}>{trade.slSet}</span></p>
+                                                <p className="bg-white/10 px-2 py-1 rounded">Close: <span className="text-divine-skyblue">{trade.tradeCloseType}</span></p>
                                             </div>
                                         </div>
-                                        <div className="mt-2 border-t border-white/10 pt-2 space-y-2">
-                                            <div>
-                                                <h4 className="font-semibold text-sm text-gray-300">Logic:</h4>
-                                                <p className="text-sm text-gray-400 whitespace-pre-wrap">{trade.logic}</p>
+                                        
+                                        {trade.screenshot && (
+                                            <div className="mb-3 rounded-lg overflow-hidden border border-white/10 h-32">
+                                                <img src={trade.screenshot} alt="Trade Screenshot" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                             </div>
-                                            {trade.mistakes && (
-                                                <div>
-                                                    <h4 className="font-semibold text-sm text-red-400/80">Mistakes:</h4>
-                                                    <p className="text-sm text-gray-400 whitespace-pre-wrap">{trade.mistakes}</p>
+                                        )}
+
+                                        <div className="grid grid-cols-2 gap-2 text-[11px] mb-2">
+                                            <div className="bg-black/20 p-1.5 rounded">
+                                                <span className="text-gray-500 block">Strategy</span>
+                                                <span className="text-gray-300 truncate block">{trade.strategy || 'N/A'}</span>
+                                            </div>
+                                            <div className="bg-black/20 p-1.5 rounded">
+                                                <span className="text-gray-500 block">Risk</span>
+                                                <span className="text-gray-300 block">{currency}{trade.riskAmount || 0}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2 text-xs">
+                                            {trade.psychology && (
+                                                <div className="bg-divine-skyblue/5 p-2 rounded border border-divine-skyblue/10">
+                                                    <span className="text-divine-skyblue font-semibold block mb-0.5">Psychology</span>
+                                                    <p className="text-gray-400 line-clamp-2">{trade.psychology}</p>
                                                 </div>
                                             )}
-                                            {trade.learning && (
-                                                <div>
-                                                    <h4 className="font-semibold text-sm text-green-400/80">Learnings:</h4>
-                                                    <p className="text-sm text-gray-400 whitespace-pre-wrap">{trade.learning}</p>
+                                            {trade.mistakes && (
+                                                <div className="bg-red-500/5 p-2 rounded border border-red-500/10">
+                                                    <span className="text-red-400 font-semibold block mb-0.5">Mistakes</span>
+                                                    <p className="text-gray-400 line-clamp-2">{trade.mistakes}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -400,48 +465,123 @@
                 </div>
 
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={'id' in editingTrade ? 'Edit Trade' : 'Add New Trade'}>
-                    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                        <input type="date" value={editingTrade.date} onChange={e => setEditingTrade({...editingTrade, date: e.target.value})} className="w-full p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-                        <div className="flex gap-2">
-                            <button onClick={() => setEditingTrade({...editingTrade, type: 'profit'})} className={`flex-1 p-2 rounded-lg transition ${editingTrade.type === 'profit' ? 'bg-green-500' : 'bg-white/10 hover:bg-white/20'}`}>Profit</button>
-                            <button onClick={() => setEditingTrade({...editingTrade, type: 'loss'})} className={`flex-1 p-2 rounded-lg transition ${editingTrade.type === 'loss' ? 'bg-red-500' : 'bg-white/10 hover:bg-white/20'}`}>Loss</button>
+                    <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2 scrollbar-hide">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">Date</label>
+                                <input type="date" value={editingTrade.date} onChange={e => setEditingTrade({...editingTrade, date: e.target.value})} className="w-full p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-1 focus:ring-divine-skyblue focus:outline-none text-sm"/>
+                            </div>
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">Trade of Day</label>
+                                <select value={editingTrade.tradeOfDay} onChange={e => setEditingTrade({...editingTrade, tradeOfDay: e.target.value})} className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm">
+                                    <option value="1st" className="bg-divine-blue">1st Trade</option>
+                                    <option value="2nd" className="bg-divine-blue">2nd Trade</option>
+                                    <option value="3rd" className="bg-divine-blue">3rd Trade</option>
+                                    <option value="4th" className="bg-divine-blue">4th Trade</option>
+                                    <option value="5th+" className="bg-divine-blue">5th+ Trade</option>
+                                </select>
+                            </div>
                         </div>
-                        <input type="number" value={editingTrade.amount} onChange={e => setEditingTrade({...editingTrade, amount: parseFloat(e.target.value) || 0})} placeholder="Amount" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
-                        <input type="text" value={editingTrade.pair} onChange={e => setEditingTrade({...editingTrade, pair: e.target.value})} placeholder="Pair (e.g., EUR/USD)" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
-                        <textarea value={editingTrade.logic} onChange={e => setEditingTrade({...editingTrade, logic: e.target.value})} placeholder="Trade Logic" className="w-full p-2 bg-white/10 rounded-lg border border-white/20" rows={3}></textarea>
-                        <input type="text" value={editingTrade.slSet} onChange={e => setEditingTrade({...editingTrade, slSet: e.target.value})} placeholder="Stop Loss" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">Pair</label>
+                                <input type="text" value={editingTrade.pair} onChange={e => setEditingTrade({...editingTrade, pair: e.target.value})} placeholder="e.g. BTC/USD" className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm"/>
+                            </div>
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">Side</label>
+                                <div className="flex gap-1">
+                                    <button onClick={() => setEditingTrade({...editingTrade, buySell: 'Buy'})} className={`flex-1 p-1.5 rounded-md text-xs transition ${editingTrade.buySell === 'Buy' ? 'bg-divine-skyblue text-divine-blue font-bold' : 'bg-white/10'}`}>Buy</button>
+                                    <button onClick={() => setEditingTrade({...editingTrade, buySell: 'Sell'})} className={`flex-1 p-1.5 rounded-md text-xs transition ${editingTrade.buySell === 'Sell' ? 'bg-orange-500 text-white' : 'bg-white/10'}`}>Sell</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">Result</label>
+                                <div className="flex gap-1">
+                                    <button onClick={() => setEditingTrade({...editingTrade, type: 'profit'})} className={`flex-1 p-1.5 rounded-md text-xs transition ${editingTrade.type === 'profit' ? 'bg-green-500 text-white' : 'bg-white/10'}`}>Profit</button>
+                                    <button onClick={() => setEditingTrade({...editingTrade, type: 'loss'})} className={`flex-1 p-1.5 rounded-md text-xs transition ${editingTrade.type === 'loss' ? 'bg-red-500 text-white' : 'bg-white/10'}`}>Loss</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">PnL Amount</label>
+                                <input type="number" value={editingTrade.amount} onChange={e => setEditingTrade({...editingTrade, amount: parseFloat(e.target.value) || 0})} className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm"/>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">Risk Amount</label>
+                                <input type="number" value={editingTrade.riskAmount} onChange={e => setEditingTrade({...editingTrade, riskAmount: parseFloat(e.target.value) || 0})} className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm"/>
+                            </div>
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">SL Set?</label>
+                                <select value={editingTrade.slSet} onChange={e => setEditingTrade({...editingTrade, slSet: e.target.value})} className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm">
+                                    <option value="Yes" className="bg-divine-blue">Yes</option>
+                                    <option value="No" className="bg-divine-blue">No</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">Confidence (1-10)</label>
+                                <input type="range" min="1" max="10" value={editingTrade.confidenceLevel} onChange={e => setEditingTrade({...editingTrade, confidenceLevel: parseInt(e.target.value)})} className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-divine-skyblue mt-3"/>
+                            </div>
+                            <div>
+                                <label className="text-xs text-gray-400 mb-1 block">Close Type</label>
+                                <select value={editingTrade.tradeCloseType} onChange={e => setEditingTrade({...editingTrade, tradeCloseType: e.target.value})} className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm">
+                                    <option value="Manual" className="bg-divine-blue">Manual</option>
+                                    <option value="SL" className="bg-divine-blue">SL Hit</option>
+                                    <option value="TP" className="bg-divine-blue">TP Hit</option>
+                                    <option value="Trailed SL" className="bg-divine-blue">Trailed SL</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div>
-                            <label htmlFor="confidence" className="block text-sm font-medium text-gray-300 mb-1">Confidence Level</label>
-                            <select
-                                id="confidence"
-                                value={editingTrade.confidenceLevel || 5}
-                                onChange={e => setEditingTrade({...editingTrade, confidenceLevel: parseInt(e.target.value, 10)})}
-                                className="w-full p-2 bg-white/10 rounded-lg border border-white/20"
-                            >
-                                {Array.from({ length: 10 }, (_, i) => i + 1).map(level => (
-                                    <option key={level} value={level} className="bg-gray-800">{level}</option>
-                                ))}
-                            </select>
+                            <label className="text-xs text-gray-400 mb-1 block">Strategy</label>
+                            <input type="text" value={editingTrade.strategy} onChange={e => setEditingTrade({...editingTrade, strategy: e.target.value})} placeholder="e.g. Breakout, Retest" className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm"/>
                         </div>
-                        <textarea
-                            value={editingTrade.mistakes || ''}
-                            onChange={e => setEditingTrade({...editingTrade, mistakes: e.target.value})}
-                            placeholder="What mistakes were made?"
-                            className="w-full p-2 bg-white/10 rounded-lg border border-white/20"
-                            rows={3}
-                        />
-                        <textarea
-                            value={editingTrade.learning || ''}
-                            onChange={e => setEditingTrade({...editingTrade, learning: e.target.value})}
-                            placeholder="What did you learn from this trade?"
-                            className="w-full p-2 bg-white/10 rounded-lg border border-white/20"
-                            rows={3}
-                        />
-                        <div className="flex justify-end gap-2">
+
+                        <div>
+                            <label className="text-xs text-gray-400 mb-1 block">Psychology</label>
+                            <textarea value={editingTrade.psychology} onChange={e => setEditingTrade({...editingTrade, psychology: e.target.value})} placeholder="How were you feeling?" className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm" rows={2}></textarea>
+                        </div>
+
+                        <div>
+                            <label className="text-xs text-gray-400 mb-1 block">Observation & Mistakes</label>
+                            <div className="grid grid-cols-1 gap-2">
+                                <textarea value={editingTrade.observation} onChange={e => setEditingTrade({...editingTrade, observation: e.target.value})} placeholder="Observation" className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm" rows={2}></textarea>
+                                <textarea value={editingTrade.mistakes} onChange={e => setEditingTrade({...editingTrade, mistakes: e.target.value})} placeholder="Mistakes" className="w-full p-2 bg-white/10 rounded-lg border border-white/20 text-sm" rows={2}></textarea>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-xs text-gray-400 mb-1 block">Screenshot</label>
+                            <div className="flex items-center gap-3">
+                                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="screenshot-upload" />
+                                <label htmlFor="screenshot-upload" className="flex-1 p-2 bg-white/10 rounded-lg border border-dashed border-white/30 text-center cursor-pointer hover:bg-white/20 transition text-sm text-gray-300">
+                                    {editingTrade.screenshot ? 'Change Screenshot' : 'Upload Screenshot'}
+                                </label>
+                                {editingTrade.screenshot && (
+                                    <button onClick={() => setEditingTrade({...editingTrade, screenshot: ''})} className="p-2 bg-red-500/20 text-red-400 rounded-lg text-xs">Remove</button>
+                                )}
+                            </div>
+                            {editingTrade.screenshot && (
+                                <div className="mt-2 rounded-lg overflow-hidden border border-white/10 h-24">
+                                    <img src={editingTrade.screenshot} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
                              {'id' in editingTrade && (
-                                 <button onClick={() => handleDelete(editingTrade.id)} className="px-4 py-2 bg-red-500/80 rounded-lg hover:bg-red-500 transition">Delete</button>
+                                 <button onClick={() => handleDelete(editingTrade.id)} className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/40 transition text-sm font-bold">Delete</button>
                              )}
-                            <button onClick={handleSave} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">Save</button>
+                            <button onClick={handleSave} className="px-6 py-2 bg-divine-skyblue text-divine-blue rounded-lg hover:bg-sky-500 transition text-sm font-bold shadow-lg">Save Trade</button>
                         </div>
                     </div>
                 </Modal>
@@ -488,7 +628,7 @@
             <div>
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl sm:text-3xl font-bold">Achievements</h1>
-                    <button onClick={openNewModal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition font-semibold">+ Add</button>
+                    <button onClick={openNewModal} className="px-4 py-2 bg-divine-skyblue text-divine-blue rounded-lg hover:bg-sky-500 transition font-bold shadow-lg">+ Add</button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {achievements.map(ach => (
@@ -512,7 +652,7 @@
                                 <button
                                     key={emoji}
                                     onClick={() => setEditingAchievement({...editingAchievement, emoji: emoji})}
-                                    className={`text-3xl p-2 rounded-full transition ${editingAchievement.emoji === emoji ? 'bg-blue-500/50 scale-125' : 'hover:bg-white/10'}`}
+                                    className={`text-3xl p-2 rounded-full transition ${editingAchievement.emoji === emoji ? 'bg-divine-skyblue/50 scale-125' : 'hover:bg-white/10'}`}
                                 >
                                     {emoji}
                                 </button>
@@ -522,7 +662,7 @@
                              {'id' in editingAchievement && (
                                  <button onClick={() => handleDelete(editingAchievement.id)} className="px-4 py-2 bg-red-500/80 rounded-lg hover:bg-red-500 transition">Delete</button>
                              )}
-                            <button onClick={handleSave} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">Save</button>
+                            <button onClick={handleSave} className="px-4 py-2 bg-divine-skyblue text-divine-blue font-bold rounded-lg hover:bg-sky-500 transition">Save</button>
                         </div>
                     </div>
                 </Modal>
@@ -587,7 +727,7 @@
             <div>
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl sm:text-3xl font-bold">Goals</h1>
-                    <button onClick={openNewModal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition font-semibold">+ Add Goal</button>
+                    <button onClick={openNewModal} className="px-4 py-2 bg-divine-skyblue text-divine-blue rounded-lg hover:bg-sky-500 transition font-bold shadow-lg">+ Add Goal</button>
                 </div>
                 <div className="space-y-6">
                     {goals.map(goal => {
@@ -597,12 +737,12 @@
                                 <div className="flex justify-between items-center mb-2">
                                     <span className="font-bold text-lg">{goal.name}</span>
                                     <div className="space-x-2">
-                                        <button onClick={() => openUpdateModal(goal)} className="px-3 py-1 text-sm bg-blue-500/80 rounded-md hover:bg-blue-600">Update</button>
+                                        <button onClick={() => openUpdateModal(goal)} className="px-3 py-1 text-sm bg-divine-skyblue/80 text-divine-blue font-bold rounded-md hover:bg-divine-skyblue">Update</button>
                                         <button onClick={() => openEditModal(goal)} className="px-3 py-1 text-sm bg-white/10 rounded-md hover:bg-white/20">Edit</button>
                                     </div>
                                 </div>
                                 <div className="w-full bg-gray-700 rounded-full h-2.5 mb-1">
-                                    <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${Math.min(100, progress)}%` }}></div>
+                                    <div className="bg-divine-skyblue h-2.5 rounded-full" style={{ width: `${Math.min(100, progress)}%` }}></div>
                                 </div>
                                 <div className="text-sm text-gray-300 text-right">
                                     {currency}{goal.current.toFixed(2)} / {currency}{goal.target.toFixed(2)} ({progress.toFixed(1)}%)
@@ -618,7 +758,7 @@
                         <input type="number" value={editingGoal.current} onChange={e => setEditingGoal({...editingGoal, current: parseFloat(e.target.value) || 0})} placeholder="Current Amount" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
                         <div className="flex justify-end gap-2">
                             {'id' in editingGoal && <button onClick={() => handleDeleteGoal(editingGoal.id)} className="px-4 py-2 bg-red-500/80 rounded-lg hover:bg-red-500">Delete</button>}
-                            <button onClick={handleSaveGoal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600">Save</button>
+                            <button onClick={handleSaveGoal} className="px-4 py-2 bg-divine-skyblue text-divine-blue font-bold rounded-lg hover:bg-sky-500">Save</button>
                         </div>
                     </div>
                 </Modal>
@@ -626,7 +766,7 @@
                     <div className="space-y-4">
                          <input type="number" value={updateAmount} onChange={e => setUpdateAmount(parseFloat(e.target.value) || 0)} placeholder="Amount to add (use '-' for subtraction)" className="w-full p-2 bg-white/10 rounded-lg border border-white/20"/>
                          <div className="flex justify-end gap-2">
-                            <button onClick={handleUpdateGoal} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">Update</button>
+                            <button onClick={handleUpdateGoal} className="px-4 py-2 bg-divine-skyblue text-divine-blue font-bold rounded-lg hover:bg-sky-500 transition">Update</button>
                         </div>
                     </div>
                 </Modal>
@@ -890,7 +1030,7 @@
                   <StatCard title="Total Profit" value={`${currency}${performanceStats.totalProfit.toFixed(2)}`} color="text-green-400" />
                   <StatCard title="Total Loss" value={`${currency}${performanceStats.totalLoss.toFixed(2)}`} color="text-red-400" />
                   <StatCard title="Net Profit" value={`${currency}${performanceStats.netProfit.toFixed(2)}`} color={performanceStats.netProfit >= 0 ? 'text-green-400' : 'text-red-400'} />
-                  <StatCard title="Daily Win Rate" value={`${performanceStats.dailyWinRate.toFixed(1)}%`} color="text-blue-400" />
+                  <StatCard title="Daily Win Rate" value={`${performanceStats.dailyWinRate.toFixed(1)}%`} color="text-divine-skyblue" />
                   <StatCard title="Avg Profit" value={`${currency}${performanceStats.avgProfit.toFixed(2)}`} color="text-green-400" />
                   <StatCard title="Avg Loss" value={`${currency}${performanceStats.avgLoss.toFixed(2)}`} color="text-red-400" />
                   <StatCard title="Max Profit" value={`${currency}${performanceStats.maxProfit.toFixed(2)}`} color="text-green-400" />
@@ -912,8 +1052,8 @@
                             <button onClick={nextPeriod} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&gt;</button>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => setTimeframe('week')} className={`px-3 py-1 text-sm rounded-md ${timeframe === 'week' ? 'bg-blue-500' : 'bg-white/10'}`}>Week</button>
-                            <button onClick={() => setTimeframe('month')} className={`px-3 py-1 text-sm rounded-md ${timeframe === 'month' ? 'bg-blue-500' : 'bg-white/10'}`}>Month</button>
+                            <button onClick={() => setTimeframe('week')} className={`px-3 py-1 text-sm rounded-md ${timeframe === 'week' ? 'bg-divine-skyblue text-divine-blue font-bold' : 'bg-white/10'}`}>Week</button>
+                            <button onClick={() => setTimeframe('month')} className={`px-3 py-1 text-sm rounded-md ${timeframe === 'month' ? 'bg-divine-skyblue text-divine-blue font-bold' : 'bg-white/10'}`}>Month</button>
                         </div>
                     </div>
                   </div>
@@ -983,71 +1123,79 @@
       const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
       return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-6">Trading Rules</h1>
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                value={ruleText}
-                onChange={(e) => setRuleText(e.target.value)}
-                placeholder="Enter a new rule"
-                className="flex-1 p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              />
-              <button onClick={handleAddRule} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition">{editingRule ? 'Update' : 'Add'}</button>
-            </div>
-            <div className="space-y-2">
-              {rules.map((rule, index) => (
-                <div key={rule.id} className="flex items-center justify-between bg-white/5 p-3 rounded-lg">
-                  <span className="flex-1">{index + 1}. {rule.text}</span>
-                  <div className="space-x-2">
-                    <button onClick={() => handleEditRule(rule)} className="text-blue-400 hover:text-blue-300">Edit</button>
-                    <button onClick={() => handleDeleteRule(rule.id)} className="text-red-400 hover:text-red-300">Delete</button>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="space-y-8">
+          <div className="text-center">
+            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-red-500 mb-2">लालच, क्रोध, अहंकार</h1>
+            <p className="text-divine-skyblue font-serif text-lg tracking-widest">Discipline | Patience | Consistency</p>
           </div>
-          <div>
-            <h2 className="text-2xl font-bold mb-6 text-center">Rule Adherence Tracker</h2>
-            <div className="flex justify-between items-center mb-4">
-              <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&lt;</button>
-              <h3 className="text-xl font-semibold text-center">{calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3>
-              <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))} className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&gt;</button>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl">
+                <h2 className="text-xl font-serif font-bold mb-4 text-divine-skyblue">My Trading Rules</h2>
+                <div className="flex gap-2 mb-4">
+                <input
+                    type="text"
+                    value={ruleText}
+                    onChange={(e) => setRuleText(e.target.value)}
+                    placeholder="Enter a new rule"
+                    className="flex-1 p-2 bg-white/10 rounded-lg border border-white/20 focus:ring-1 focus:ring-divine-skyblue focus:outline-none"
+                />
+                <button onClick={handleAddRule} className="px-4 py-2 bg-divine-skyblue text-divine-blue rounded-lg hover:bg-sky-500 transition font-bold">{editingRule ? 'Update' : 'Add'}</button>
+                </div>
+                <div className="space-y-2">
+                {rules.map((rule, index) => (
+                    <div key={rule.id} className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/5">
+                    <span className="flex-1 text-sm"><span className="text-divine-skyblue font-bold mr-2">{index + 1}.</span> {rule.text}</span>
+                    <div className="space-x-2 flex-shrink-0">
+                        <button onClick={() => handleEditRule(rule)} className="text-divine-skyblue hover:text-sky-300 text-xs">Edit</button>
+                        <button onClick={() => handleDeleteRule(rule.id)} className="text-red-400 hover:text-red-300 text-xs">Delete</button>
+                    </div>
+                    </div>
+                ))}
+                </div>
             </div>
-            <div className="grid grid-cols-7 gap-1 sm:gap-2">
-              {daysOfWeek.map(day => <div key={day} className="text-center font-bold text-gray-400 text-sm">{day}</div>)}
-              {blanks.map(i => <div key={`blank-${i}`} />)}
-              {days.map(day => {
-                const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day);
-                const dateKey = date.toISOString().split('T')[0];
-                const followedCount = followedRules[dateKey]?.length || 0;
-                return (
-                  <div key={day} onClick={() => handleDayClick(date)} className="relative p-2 h-16 rounded-lg cursor-pointer transition bg-white/5 hover:bg-white/20 text-center flex flex-col justify-center items-center">
-                    <span className="font-bold">{day}</span>
-                    {followedCount > 0 && (
-                      <span className="text-xs text-green-400">{followedCount}/{rules.length} followed</span>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl">
+                <h2 className="text-xl font-serif font-bold mb-4 text-divine-skyblue text-center">Rule Adherence Tracker</h2>
+                <div className="flex justify-between items-center mb-4">
+                <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&lt;</button>
+                <h3 className="text-lg font-semibold text-center">{calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3>
+                <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition">&gt;</button>
+                </div>
+                <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                {daysOfWeek.map(day => <div key={day} className="text-center font-bold text-gray-400 text-[10px] uppercase tracking-tighter">{day}</div>)}
+                {blanks.map(i => <div key={`blank-${i}`} />)}
+                {days.map(day => {
+                    const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day);
+                    const dateKey = date.toISOString().split('T')[0];
+                    const followedCount = followedRules[dateKey]?.length || 0;
+                    const isToday = new Date().toDateString() === date.toDateString();
+                    return (
+                    <div key={day} onClick={() => handleDayClick(date)} className={`relative p-1 h-12 rounded-lg cursor-pointer transition flex flex-col justify-center items-center border ${isToday ? 'border-divine-skyblue bg-divine-skyblue/10' : 'border-transparent bg-white/5 hover:bg-white/10'}`}>
+                        <span className="font-bold text-xs">{day}</span>
+                        {followedCount > 0 && (
+                        <span className="text-[8px] text-green-400 leading-tight">{followedCount}/{rules.length}</span>
+                        )}
+                    </div>
+                    );
+                })}
+                </div>
             </div>
           </div>
           <Modal isOpen={isCalendarModalOpen} onClose={() => setCalendarModalOpen(false)} title={`Rules for ${selectedDate.toLocaleDateString()}`}>
             <div className="space-y-3">
               {rules.length > 0 ? rules.map(rule => (
-                <label key={rule.id} className="flex items-center p-3 bg-white/10 rounded-lg cursor-pointer">
+                <label key={rule.id} className="flex items-center p-3 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition">
                   <input
                     type="checkbox"
                     checked={followedRules[selectedDate.toISOString().split('T')[0]]?.includes(rule.id) || false}
                     onChange={() => handleToggleRuleFollowed(rule.id)}
-                    className="w-5 h-5 rounded bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-600"
+                    className="w-5 h-5 rounded bg-gray-700 border-gray-600 text-divine-skyblue focus:ring-divine-skyblue"
                   />
-                  <span className="ml-3 text-white">{rule.text}</span>
+                  <span className="ml-3 text-white text-sm">{rule.text}</span>
                 </label>
               )) : <p className="text-center text-gray-400">No rules defined yet.</p>}
               <div className="flex justify-end pt-4">
-                <button onClick={() => setCalendarModalOpen(false)} className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600">Close</button>
+                <button onClick={() => setCalendarModalOpen(false)} className="px-6 py-2 bg-divine-skyblue text-divine-blue rounded-lg hover:bg-sky-500 font-bold">Close</button>
               </div>
             </div>
           </Modal>
@@ -1059,7 +1207,7 @@
     const DetailsTab = () => {
         const InfoItem = ({ icon, label, value, displayValue, isLink = false }) => (
             <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-6 h-6 text-blue-400">{icon}</div>
+                <div className="flex-shrink-0 w-6 h-6 text-divine-skyblue">{icon}</div>
                 <div>
                     <h3 className="font-semibold text-gray-300">{label}</h3>
                     {isLink ? (
@@ -1145,9 +1293,9 @@
 
         return (
             <nav className="w-64 h-full p-4 flex-shrink-0 hidden md:flex">
-                <div className="bg-black/10 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl h-full flex flex-col p-4">
-                    <div className="text-2xl font-bold mb-10 text-center tracking-widest text-white/90">
-                        Trading Journal 📈
+                <div className="bg-divine-blue/40 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl h-full flex flex-col p-4">
+                    <div className="text-2xl font-serif font-bold mb-10 text-center tracking-widest text-divine-skyblue">
+                        Divine Journal 🪶
                     </div>
                     <ul className="space-y-2">
                         {navItems.map((item) => (
@@ -1156,7 +1304,7 @@
                             onClick={() => setActiveTab(item.id)}
                             className={`w-full flex items-center p-3 rounded-lg transition-all duration-300 ${
                                 activeTab === item.id
-                                ? 'bg-blue-500/30 text-white shadow-lg'
+                                ? 'bg-divine-skyblue text-divine-blue shadow-lg font-bold'
                                 : 'text-gray-300 hover:bg-white/10 hover:text-white'
                             }`}
                             >
@@ -1207,7 +1355,7 @@
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
                             className={`flex flex-col items-center justify-center p-2 w-20 flex-shrink-0 transition-colors duration-200 ${
-                                activeTab === item.id ? 'text-blue-400' : 'text-gray-400 hover:text-white'
+                                activeTab === item.id ? 'text-divine-skyblue' : 'text-gray-400 hover:text-white'
                             }`}
                         >
                             {item.icon}
@@ -1217,7 +1365,7 @@
                     <button
                         onClick={onMenuClick}
                         className={`flex flex-col items-center justify-center p-2 w-20 flex-shrink-0 transition-colors duration-200 ${
-                            isMoreTabActive ? 'text-blue-400' : 'text-gray-400 hover:text-white'
+                            isMoreTabActive ? 'text-divine-skyblue' : 'text-gray-400 hover:text-white'
                         }`}
                     >
                         <MoreIcon />
@@ -1343,7 +1491,7 @@
                     <button
                         key={item.id}
                         onClick={() => { setActiveTab(item.id); setMenuOpen(false); }}
-                        className={`w-full flex items-center p-3 rounded-lg transition-all duration-300 bg-white/5 hover:bg-white/10 ${activeTab === item.id ? 'text-blue-400' : 'text-gray-300'}`}
+                        className={`w-full flex items-center p-3 rounded-lg transition-all duration-300 bg-white/5 hover:bg-white/10 ${activeTab === item.id ? 'text-divine-skyblue' : 'text-gray-300'}`}
                     >
                         {item.icon}
                         <span className="ml-4 font-medium">{item.text}</span>
@@ -1382,6 +1530,5 @@
     );
 
   </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
