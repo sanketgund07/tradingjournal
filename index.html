@@ -156,7 +156,7 @@
     ];
 
     // --- FROM components/Modal.tsx ---
-    const Modal = ({ isOpen, onClose, children, title }) => {
+    const Modal = ({ isOpen, onClose, children, title, maxWidth = 'max-w-md' }) => {
       if (!isOpen) return null;
 
       return (
@@ -165,7 +165,7 @@
           onClick={onClose}
         >
           <div
-            className="bg-gray-800/50 backdrop-blur-lg rounded-xl border border-white/20 shadow-xl p-6 w-full max-w-md m-4 transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale"
+            className={`bg-gray-800/50 backdrop-blur-lg rounded-xl border border-white/20 shadow-xl p-6 w-full ${maxWidth} m-4 transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale`}
             onClick={(e) => e.stopPropagation()}
             style={{ animation: 'fade-in-scale 0.3s forwards' }}
           >
@@ -345,6 +345,7 @@
 
         const [isModalOpen, setIsModalOpen] = useState(false);
         const [editingTrade, setEditingTrade] = useState(initialTradeState);
+        const [fullImage, setFullImage] = useState(null);
         
         const openNewTradeModal = () => {
             setEditingTrade(initialTradeState);
@@ -427,7 +428,7 @@
                                         </div>
                                         
                                         {trade.screenshot && (
-                                            <div className="mb-3 rounded-lg overflow-hidden border border-white/10 h-32">
+                                            <div className="mb-3 rounded-lg overflow-hidden border border-white/10 h-32 cursor-pointer" onClick={(e) => { e.stopPropagation(); setFullImage(trade.screenshot); }}>
                                                 <img src={trade.screenshot} alt="Trade Screenshot" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                             </div>
                                         )}
@@ -571,7 +572,7 @@
                                 )}
                             </div>
                             {editingTrade.screenshot && (
-                                <div className="mt-2 rounded-lg overflow-hidden border border-white/10 h-24">
+                                <div className="mt-2 rounded-lg overflow-hidden border border-white/10 h-24 cursor-pointer" onClick={() => setFullImage(editingTrade.screenshot)}>
                                     <img src={editingTrade.screenshot} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                 </div>
                             )}
@@ -583,6 +584,12 @@
                              )}
                             <button onClick={handleSave} className="px-6 py-2 bg-divine-skyblue text-divine-blue rounded-lg hover:bg-sky-500 transition text-sm font-bold shadow-lg">Save Trade</button>
                         </div>
+                    </div>
+                </Modal>
+
+                <Modal isOpen={!!fullImage} onClose={() => setFullImage(null)} title="Full Image" maxWidth="max-w-4xl">
+                    <div className="flex justify-center">
+                        <img src={fullImage} alt="Full Trade Screenshot" className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" referrerPolicy="no-referrer" />
                     </div>
                 </Modal>
             </div>
@@ -1182,7 +1189,7 @@
             </div>
           </div>
           <Modal isOpen={isCalendarModalOpen} onClose={() => setCalendarModalOpen(false)} title={`Rules for ${selectedDate.toLocaleDateString()}`}>
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
               {rules.length > 0 ? rules.map(rule => (
                 <label key={rule.id} className="flex items-center p-3 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition">
                   <input
