@@ -1,0 +1,6 @@
+{
+  "name": "Divine Trading Journal",
+  "description": "A comprehensive trading journal app with calendar tracking, trade logs, performance metrics, goals, achievements, and rule adherence tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
